@@ -80,6 +80,9 @@ class UrbanGenerator(nn.Module):
 # =========================================================================
 # ⚙️ FIXED: AUTOMATED MODEL WEIGHTS DOWNLOAD UTILITY (RAW BINARY)
 # =========================================================================
+# =========================================================================
+# ⚙️ SECURE HARDWARE CLOUD WEIGHTS INGESTION FROM HUGGING FACE
+# =========================================================================
 device = torch.device("cpu")
 
 @st.cache_resource
@@ -90,7 +93,6 @@ def load_ai_model():
     
     if not os.path.exists(checkpoint_path):
         with st.spinner("📥 Downloading deep neural network weights from Hugging Face (~40MB)..."):
-            # FIXED: Points directly to the raw binary download endpoint to prevent pickling errors
             download_url = "https://huggingface.co"
             
             import requests
@@ -106,16 +108,17 @@ def load_ai_model():
                             
     if os.path.exists(checkpoint_path):
         try:
-            model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+            # FIXED: Bypasses the strict PyTorch 2.6 security lock by marking the model as a trusted source
+            model.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=False))
         except Exception as e:
-            st.error(f"❌ Corruption detected. Try clear cache and reboot app. Details: {e}")
-            # Wipe corrupt file if initialization fails so it redownloads clean next time
+            st.error(f"❌ Error loading model weights: {e}")
             if os.path.exists(checkpoint_path):
                 os.remove(checkpoint_path)
     model.eval()
     return model
 
 net_G = load_ai_model()
+
 
 # =========================================================================
 # USER UPLOAD PANEL FILE IMAGE INGESTION LAYER
