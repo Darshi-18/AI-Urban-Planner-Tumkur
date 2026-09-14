@@ -78,19 +78,42 @@ class UrbanGenerator(nn.Module):
         return self.final(torch.cat([u4, d1], dim=1))
 
 # =========================================================================
-# ⚙️ LOAD MODEL WEIGHTS MATRIX SAFELY IN THE CLOUD
+# ⚙️ SECURE HARDWARE CLOUD WEIGHTS INGESTION
 # =========================================================================
 device = torch.device("cpu")
+
 @st.cache_resource
 def load_ai_model():
     model = UrbanGenerator()
+    
+    # 1. Establish the internal cloud directories paths
+    os.makedirs("saved_models", exist_ok=True)
     checkpoint_path = "saved_models/generator_epoch_8.pth"
+    
+    # 2. AUTOMATIC EXTERNAL CORE INGESTION UTILITY
+    if not os.path.exists(checkpoint_path):
+        with st.spinner("📥 Downloading deep neural network weights (~40MB)... This happens only once."):
+            # REPLACE 'YOUR_FILE_ID' BELOW with your actual Google Drive long file ID string
+            FILE_ID = "YOUR_FILE_ID" 
+            download_url = f"https://google.com{FILE_ID}"
+            
+            # Low-overhead request streaming buffer to bypass server RAM timeout limits
+            import requests
+            response = requests.get(download_url, stream=True)
+            if response.status_code == 200:
+                with open(checkpoint_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        if chunk:
+                            f.write(chunk)
+                            
+    # 3. Load the completed array back to memory
     if os.path.exists(checkpoint_path):
         model.load_state_dict(torch.load(checkpoint_path, map_location=device))
     model.eval()
     return model
 
 net_G = load_ai_model()
+
 
 # =========================================================================
 # FILE CONTROLLER INTERFACE
