@@ -61,10 +61,10 @@ if sector_density == "Eco-Fringe Modular Settlement":
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("`[MATRIX SPECTRUM INTERPRETATION]`")
-st.sidebar.markdown("运输 🟪 **Electric Cyan:** Commercial Core Infrastructure")
-st.sidebar.markdown("住宅 🟧 **Neon Terracotta:** Planned Dwellings Footprints")
-st.sidebar.markdown("绿化 🟩 **Bio-Synthetic Sage:** Protected Eco-Green Belts")
-st.sidebar.markdown("道路 ⬜ **Pure Platinum:** Primary Highway Transportation Networks")
+st.sidebar.markdown("🟦 **Electric Cyan:** Commercial Core Infrastructure")
+st.sidebar.markdown("🟧 **Neon Terracotta:** Planned Dwellings Footprints")
+st.sidebar.markdown("🟩 **Bio-Synthetic Sage:** Protected Eco-Green Belts")
+st.sidebar.markdown("⬜ **Pure Platinum:** Primary Highway Transportation Networks")
 
 # =========================================================================
 # GEOSPATIAL FILE INGESTION UTILITY
@@ -72,11 +72,10 @@ st.sidebar.markdown("道路 ⬜ **Pure Platinum:** Primary Highway Transportatio
 uploaded_file = st.file_uploader("UPLOAD TARGET GEOGRAPHIC AERIAL FOOTPRINT GRAPHIC (PNG/JPG)", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    # Standardize image array handling natively to fit all display profiles
     raw_img = Image.open(uploaded_file).convert("RGB")
     img_np = np.array(raw_img)
     
-    # FIX: Dynamically match dimension blocks based on incoming resolution properties
+    # Scale coordinates to protect UI container bounds
     orig_h, orig_w, _ = img_np.shape
     scale_factor = 512 / max(orig_h, orig_w)
     new_h, new_w = int(orig_h * scale_factor), int(orig_w * scale_factor)
@@ -138,15 +137,17 @@ if uploaded_file is not None:
             else:
                 dist_to_transit = 999.0
                 
-            if dist_to_transit < 45:
+            # FIXED LOGIC HIERARCHY: Restrict Commercial nodes to the immediate narrow highway path (distance < 20)
+            if dist_to_transit < 20:
                 if x % 2 == 0 and y % 2 == 0:
-                    # Draw futuristic neon high-density commercial centers
+                    # Draw futuristic neon high-density commercial centers (Electric Cyan)
                     cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (0, 240, 255), -1) 
                     cv2.rectangle(blueprint, (x, y + b_size - 4), (x + b_size // 2, y + b_size + 2), (0, 240, 255), -1)
                     cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (255, 255, 255), 1)
                     comm_count += 1
+            # Allocate Residential Dwellings in flat buildable plots away from heavy transit lines
             elif smooth_green[y + b_size // 2, x + b_size // 2] <= 100:
-                # Draw property boundaries and individual terracotta dwellings
+                # Draw property boundaries and individual terracotta dwellings (Neon Terracotta/Orange)
                 cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size), (4, 45, 54), 1)
                 h_dim = int(b_size * 0.6)
                 cv2.rectangle(blueprint, (x + 2, y + 2), (x + h_dim, y + h_dim), (255, 110, 0), -1) 
@@ -166,7 +167,7 @@ if uploaded_file is not None:
         blueprint[edges == 255] = (0, 240, 255)         
         
     # =========================================================================
-    # COMPUTATIONAL DATA METRICS MONITOR capítulos CONTROL BOARD
+    # COMPUTATIONAL DATA METRICS MONITOR CONTROL BOARD
     # =========================================================================
     m_col1, m_col2, m_col3, m_col4 = st.columns(4)
     
@@ -185,15 +186,13 @@ if uploaded_file is not None:
     st.markdown("<br>", unsafe_allow_html=True)
     
     # =========================================================================
-    # SIDE-BY-SIDE PLATFORM COLUMNS (RESPONSIVE VIEW ENABLED)
+    # SIDE-BY-SIDE PRESENTATION COLUMNS (RESPONSIVE VIEW ENABLED)
     # =========================================================================
     ui_col1, ui_col2 = st.columns(2)
     
     with ui_col1:
         st.subheader("📡 SOURCE DATA FOOTPRINT INGESTION")
-        st.image(img_resized, use_container_width=True) # Automatically matches column properties
+        st.image(img_resized, use_container_width=True)
         
     with ui_col2:
         st.subheader("⚡ GENERATIVE METROPOLIS MATRIX BLUEPRINT")
-        st.image(blueprint, use_container_width=True) # Automatically matches column properties
-        
