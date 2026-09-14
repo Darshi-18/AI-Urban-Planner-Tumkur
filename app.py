@@ -51,19 +51,20 @@ sector_density = st.sidebar.selectbox("Zoning Profile Preset", ["High-Density Co
 preservation_idx = st.sidebar.slider("Eco-Preservation Index Threshold", 80, 140, 115, 5)
 transit_hierarchy = st.sidebar.slider("Arterial Network Extraction Sensitivity", 20, 80, 50, 5)
 
-# Resolution tuning parameters
-b_size, b_gap = 24, 10
+# Setup layout spacing variables directly without function restrictions
+b_size, b_gap = 26, 12
 if sector_density == "High-Density Core Matrix":
-    b_size, b_gap = 18, 6
+    b_size, b_gap = 20, 8
 if sector_density == "Eco-Fringe Modular Settlement":
-    b_size, b_gap = 34, 16
+    b_size, b_gap = 36, 18
 
 st.sidebar.markdown("---")
 st.sidebar.markdown("`[MATRIX SPECTRUM INTERPRETATION]`")
-st.sidebar.markdown("🟦 **Electric Cyan:** Commercial Core Infrastructure")
-st.sidebar.markdown("🟧 **Neon Terracotta:** Planned Dwellings Footprints")
+st.sidebar.markdown("🟦 **Electric Cyan:** Commercial Core Complexes")
+st.sidebar.markdown("🟧 **Neon Terracotta:** Residential House Footprints")
+st.sidebar.markdown("🟪 **Neon Fuchsia:** Public Utility Centers")
 st.sidebar.markdown("🟩 **Bio-Synthetic Sage:** Protected Eco-Green Belts")
-st.sidebar.markdown("⬜ **Pure Platinum:** Primary Highway Transportation Networks")
+st.sidebar.markdown("⬜ **Pure Platinum:** Primary Highway Transport Arteries")
 
 # =========================================================================
 # GEOSPATIAL FILE INGESTION UTILITY
@@ -74,7 +75,7 @@ if uploaded_file is not None:
     raw_img = Image.open(uploaded_file).convert("RGB")
     img_np = np.array(raw_img)
     
-    # Scale coordinates to protect UI container bounds
+    # Scale coordinates dynamically to fix smaller container bounds
     orig_h, orig_w, _ = img_np.shape
     scale_factor = 512 / max(orig_h, orig_w)
     new_h, new_w = int(orig_h * scale_factor), int(orig_w * scale_factor)
@@ -82,86 +83,93 @@ if uploaded_file is not None:
     img_resized = cv2.resize(img_np, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
     h, w, c = img_resized.shape
     
-    # Direct high-speed processing display box
-    st.markdown("<div class='console-box'>⚡ PIPELINE RUNNING: GENERATING MASTER PLAN藍圖 CORRIDORS IMMEDIATELY...</div>", unsafe_allow_html=True)
+    st.markdown("<div class='console-box'>⚡ CACHE DEACTIVATED: PROCESSING ARCHITECTURAL bluePRINT NEIGHBORHOODS INSTANTLY...</div>", unsafe_allow_html=True)
     
-    # Core Vision Pipelines (No delays, runs instantly)
+    # Core Image Filtering Pipeline
     gray = cv2.cvtColor(img_resized, cv2.COLOR_RGB2GRAY)
-    blurred_heavy = cv2.GaussianBlur(gray, (11, 11), 0)
+    blurred_heavy = cv2.GaussianBlur(gray, (13, 13), 0)
     edges = cv2.Canny(blurred_heavy, transit_hierarchy, transit_hierarchy * 2.5)
     edge_y, edge_x = np.where(edges == 255)
     
     _, green_mask = cv2.threshold(blurred_heavy, preservation_idx, 255, cv2.THRESH_BINARY_INV)
-    green_mask = cv2.dilate(green_mask, np.ones((11, 11), np.uint8), iterations=1)
-    smooth_green = cv2.GaussianBlur(green_mask, (25, 25), 0)
+    green_mask = cv2.dilate(green_mask, np.ones((13, 13), np.uint8), iterations=1)
+    smooth_green = cv2.GaussianBlur(green_mask, (29, 29), 0)
     
     # =========================================================================
-    # RESPONSIVE HIGH-REALISM BLUEPRINT SYNTHESIS ENGINE
+    # HIGH-REALISM BLUEPRINT GENERATION SUITE
     # =========================================================================
     blueprint = np.zeros((h, w, 3), dtype=np.uint8)
-    blueprint[:] = (1, 14, 18) # Neon Cyber Backdrop Tones
+    blueprint[:] = (2, 16, 20) # Premium dark teal city grid backing
     
-    # 1. Plot Preserved Landscape Buffers (Soft emerald geometry blocks)
-    blueprint[smooth_green > 100] = (16, 61, 46)
+    # 1. Paint Smooth Preserved Natural Buffers (Matte Green)
+    blueprint[smooth_green > 100] = (20, 68, 52)
     
     spacing = b_size + b_gap
-    res_count = 0
-    comm_count = 0
+    res_count, comm_count, utility_count = 0, 0, 0
     
-    # 2. Generative Zoning Matrix Optimization Pass Loops
-    for y in range(20, h - spacing, spacing):
-        for x in range(20, w - spacing, spacing):
+    # 2. Advanced Multi-Tier Spatial Partitioning Loop
+    for y in range(30, h - spacing, spacing):
+        for x in range(30, w - spacing, spacing):
             
+            # Distance mapping relative to primary extracted road coordinates
             if len(edge_x) > 0:
-                dist_to_transit = np.min(np.sqrt((edge_x - x)**2 + (edge_y - y)**2))
+                dist_to_road = np.min(np.sqrt((edge_x - x)**2 + (edge_y - y)**2))
             else:
                 dist_to_transit = 999.0
                 
-            # MULTI-TIER PROXIMITY LOGIC: Restrict Commercial to the immediate narrow highway strip (distance < 25)
-            if dist_to_transit < 25:
-                if x % 2 == 0 and y % 2 == 0:
-                    # Draw futuristic neon high-density commercial centers (Electric Cyan)
-                    cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (0, 240, 255), -1) 
+            # ZONE A: HIGHWAY ACCESS (Distance < 24) -> High-density Commercial Core Skyscrapers
+            if dist_to_road < 24:
+                if x % 2 == 0:
+                    # Draw futuristic, distinct L-shaped compound commercial properties
+                    cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size - 4), (0, 240, 255), -1) # Cyan
                     cv2.rectangle(blueprint, (x, y + b_size - 4), (x + b_size // 2, y + b_size + 2), (0, 240, 255), -1)
-                    cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (255, 255, 255), 1)
+                    cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size - 4), (255, 255, 255), 1) # White grid accent line
                     comm_count += 1
-            # Allocate Residential Neighborhood Dwellings cleanly in open flat sections
+                    
+            # ZONE B: SUBDIVISION VALLEYS -> Open buildable land away from highways
             elif smooth_green[y + b_size // 2, x + b_size // 2] <= 100:
-                # Draw property boundaries and individual terracotta dwellings (Neon Terracotta/Orange)
-                cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size), (4, 45, 54), 1)
-                h_dim = int(b_size * 0.6)
-                cv2.rectangle(blueprint, (x + 2, y + 2), (x + h_dim, y + h_dim), (255, 110, 0), -1) 
-                cv2.line(blueprint, (x + h_dim, y + 4), (x + b_size, y + 4), (0, 240, 255), 1)
-                res_count += 1
+                # Randomly allocate a public civic utility sector to break monotony
+                if (x + y) % 7 == 0:
+                    # Draw Public Utilities (Fuchsia/Pink Centers)
+                    cv2.circle(blueprint, (x + b_size//2, y + b_size//2), b_size//2 - 2, (255, 0, 127), -1)
+                    cv2.circle(blueprint, (x + b_size//2, y + b_size//2), b_size//2 - 2, (255, 255, 255), 1)
+                    utility_count += 1
+                else:
+                    # Draw Structured Residential Parcels (Terracotta Orange Houses with Access Roads)
+                    cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size), (6, 54, 64), 1) # Fine property border
+                    h_dim = int(b_size * 0.55)
+                    cv2.rectangle(blueprint, (x + 2, y + 2), (x + h_dim, y + h_dim), (255, 100, 34), -1) # Orange house footprint
+                    cv2.line(blueprint, (x + h_dim, y + 4), (x + b_size, y + 4), (0, 240, 255), 1) # Cyan access street link
+                    res_count += 1
 
-    # 3. OVERLAY HIGH-DENSITY TRANSIT VECTOR OVERLAYS
-    for y_line in range(0, h, spacing * 3):
-        cv2.line(blueprint, (0, y_line), (w, y_line), (3, 30, 36), 1)
-    for x_line in range(0, w, spacing * 3):
-        cv2.line(blueprint, (x_line, 0), (x_line, h), (3, 30, 36), 1)
+    # 3. HIGH-CONTRAST VECTOR STREET Dividers
+    for y_line in range(0, h, spacing * 2):
+        cv2.line(blueprint, (0, y_line), (w, y_line), (3, 26, 32), 1)
+    for x_line in range(0, w, spacing * 2):
+        cv2.line(blueprint, (x_line, 0), (x_line, h), (3, 26, 32), 1)
         
-    # Superimpose high-visibility primary infrastructure routes cleanly
+    # Draw primary highway corridor cleanly on top
     if len(edge_x) > 0:
         road_casing = cv2.dilate(edges, np.ones((5, 5), np.uint8), iterations=1)
-        blueprint[road_casing == 255] = (255, 255, 255) 
-        blueprint[edges == 255] = (0, 240, 255)         
+        blueprint[road_casing == 255] = (240, 244, 248) # Platinum road casing
+        blueprint[edges == 255] = (0, 240, 255)         # Neon cyan divider
         
     # =========================================================================
-    # COMPUTATIONAL DATA METRICS MONITOR CONTROL BOARD
+    # REAL-TIME LIVE DATA ANALYSIS COMMAND CENTER METRICS
     # =========================================================================
     m_col1, m_col2, m_col3, m_col4 = st.columns(4)
     
     green_ratio = int((np.sum(smooth_green > 100) / (h * w)) * 100)
-    infrastructure_km = int(np.sum(edges == 255) / 100) if len(edge_x) > 0 else 0
+    total_infrastructure_nodes = comm_count + utility_count
     
     with m_col1:
-        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{res_count:,}</div><div class='metric-label'>⚡ ALLOCATED DWELLINGS</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{res_count:,}</div><div class='metric-label'>⚡ RESIDENTIAL DWELLINGS</div></div>", unsafe_allow_html=True)
     with m_col2:
-        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{comm_count}</div><div class='metric-label'>⚡ COMMERCIAL NODES</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{total_infrastructure_nodes}</div><div class='metric-label'>⚡ CIVIC & COMMERCIAL NODES</div></div>", unsafe_allow_html=True)
     with m_col3:
         st.markdown(f"<div class='metric-panel'><div class='metric-value'>{green_ratio}%</div><div class='metric-label'>⚡ ECO-PRESERVATION INDEX</div></div>", unsafe_allow_html=True)
     with m_col4:
-        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{infrastructure_km} KM</div><div class='metric-label'>⚡ TRANSIT NETWORK INTEGRATION</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{utility_count} Units</div><div class='metric-label'>⚡ PUBLIC UTILITIES</div></div>", unsafe_allow_html=True)
         
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -178,15 +186,4 @@ if uploaded_file is not None:
         st.subheader("⚡ GENERATIVE METROPOLIS MATRIX BLUEPRINT")
         st.image(blueprint, use_container_width=True)
         
-    # DATA LAYER EXPORTER UTILITY LINK
-    final_output_image = Image.fromarray(blueprint)
-    final_output_image.save("cyber_metropolis_masterplan.png")
-    with open("cyber_metropolis_masterplan.png", "rb") as file:
-        st.download_button(
-            label="📥 DOWNLOAD CYBER BLUEPRINT CONFIGURATION LOG",
-            data=file,
-            file_name="cyber_metropolis_masterplan.png",
-            mime="image/png"
-        )
-else:
-    st.info("📡 SYSTEM STANDBY // AWAITING SATELLITE TERRAIN INPUT LAYER TO INITIALIZE RADAR PROTOCOLS.")
+    # EXPORT MANAGER LINK
