@@ -4,133 +4,186 @@ import numpy as np
 from PIL import Image
 import os
 
-# 1. SET HIERARCHICAL PAGE CONFIGURATION
+# 1. INITIALIZE WEB DASHBOARD LAYER
 st.set_page_config(
-    page_title="AI Adaptive Urban Planner", 
+    page_title="UrbanAI Nexus | Smart City Generative Engine", 
     layout="wide", 
     initial_sidebar_state="expanded"
 )
 
-# Disable potential Windows multithreading collisions safely
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-
-# =========================================================================
-# UI HEADER & APPLICATION BRANDING
-# =========================================================================
-st.title("🏗️ Generative AI Greenfield Urban City Planner")
+# 2. INJECT CUSTOM CYBERPUNK CSS ARCHITECTURE
 st.markdown("""
-This interactive system provides an automated framework for rapid master planning in expanding smart cities like **Tumakuru, Karnataka**. 
-Upload any raw satellite terrain snapshot to watch the generative logic dynamically trace topography and render custom-tailored architectural blueprints.
-""")
+    <style>
+    .main { background-color: #0d1117; color: #c9d1d9; }
+    .stSlider > div > div > div > div { background-color: #58a6ff; }
+    div.stButton > button:first-child {
+        background-color: #238636; color: white; border-radius: 6px;
+        border: 1px solid rgba(240,240,240,0.2); width: 100%; font-weight: bold;
+    }
+    .metric-box {
+        background-color: #161b22; padding: 15px; border-radius: 8px;
+        border: 1px solid #30363d; text-align: center;
+    }
+    .metric-val { font-size: 24px; font-weight: bold; color: #58a6ff; }
+    .metric-lbl { font-size: 12px; color: #8b949e; text-transform: uppercase; }
+    </style>
+    """, unsafe_allow_html=True)
 
 # =========================================================================
-# SIDEBAR DYNAMIC PARAMETERS CONFIGURATION
+# APPLICATION CORE BRANDING
 # =========================================================================
-st.sidebar.header("🎨 Planning Parameters")
-st.sidebar.markdown("Fine-tune layout allocation metrics live:")
+st.title("⚡ UrbanAI Nexus™ — Generative Smart City Engine")
+st.markdown("---")
 
-# Interactive hyperparameter controls
-sector_size = st.sidebar.slider("Residential Block Grid Size", min_value=40, max_value=120, value=60, step=10)
-green_threshold = st.sidebar.slider("Eco-Park Sensitivity", min_value=80, max_value=140, value=105, step=5)
-road_sensitivity = st.sidebar.slider("Highway Extraction Sensitivity", min_value=20, max_value=80, value=40, step=5)
+# =========================================================================
+# INTERACTIVE CONTROL PANEL (SIDEBAR)
+# =========================================================================
+st.sidebar.header("🎛️ GENERATIVE CONFIGURATIONS")
+st.sidebar.markdown("Modify structural topology constraints:")
+
+# High-fidelity parameter controls
+density_preset = st.sidebar.selectbox("Urban Density Blueprint", ["High-Density Core", "Suburban Modular Grid", "Low-Density Eco-Fringe"])
+green_factor = st.sidebar.slider("Environmental Preservation Index", 80, 140, 110, 5)
+road_hierarchy = st.sidebar.slider("Transit Arterial Extraction Threshold", 20, 80, 45, 5)
+
+# Mapping grid internal adjustments based on preset values
+if density_preset == "High-Density Core":
+    b_size, b_gap = 14, 4
+elif density_preset == "Suburban Modular Grid":
+    b_size, b_gap = 20, 8
+else:
+    b_size, b_gap = 28, 14
 
 st.sidebar.markdown("---")
-st.sidebar.markdown("**Master Zoning Legend:**")
-st.sidebar.markdown("🟠 **Orange:** Residential Footprints")
-st.sidebar.markdown("🔵 **Blue:** Commercial Core Complexes")
-st.sidebar.markdown("🟢 **Green:** Eco-Park Buffer Zones")
-st.sidebar.markdown("⚫ **Grey/White:** Primary Highway Artery")
+st.sidebar.markdown("**🎨 LAYOUT MATRIX LEGEND:**")
+st.sidebar.markdown("🟠 **Terracotta Red:** Residential House Footprints")
+st.sidebar.markdown("🔵 **Deep Cobalt:** High-Density Commercial Hubs")
+st.sidebar.markdown("🟢 **Emerald Pasture:** Preserved Eco-Buffer Zones")
+st.sidebar.markdown("⚪ **Asphalt / Platinum:** Primary Transit Grids")
 
 # =========================================================================
-# CORE UPLOAD HANDLER INTERFACE
+# SATELLITE IMAGE FILE CONTROLLER
 # =========================================================================
-uploaded_file = st.file_uploader("Choose an un-developed square satellite terrain image...", type=["png", "jpg", "jpeg"])
+uploaded_file = st.file_uploader("Upload target geographic aerial imagery (PNG/JPG)", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
-    # Safely convert data bytes into a standardized matrix canvas
     raw_img = Image.open(uploaded_file).convert("RGB")
-    raw_img = raw_img.resize((600, 600), Image.Resampling.LANCZOS)
+    raw_img = raw_img.resize((700, 700), Image.Resampling.LANCZOS)
     img_np = np.array(raw_img)
     h, w, c = img_np.shape
     
-    # Establish layout matrix grids columns
-    col1, col2 = st.columns(2)
+    # Run Computer Vision Data Decomposition
+    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blurred, road_hierarchy, road_hierarchy * 3)
+    edge_y, edge_x = np.where(edges == 255)
     
-    with col1:
-        st.subheader("Input: Raw Satellite Terrain")
-        st.image(img_np, use_container_width=True)
-        
+    # Calculate natural vegetation topology mask
+    _, green_mask = cv2.threshold(blurred, green_factor, 255, cv2.THRESH_BINARY_INV)
+    green_mask = cv2.dilate(green_mask, np.ones((11, 11), np.uint8), iterations=1)
+    
     # =========================================================================
-    # DYNAMIC TOPOGRAPHY-AWARE URBAN ENGINE
+    # HIGH-REALISM BLUEPRINT RENDER ENGINE
     # =========================================================================
-    with st.spinner("🧠 Analyzing topological features and road corridors..."):
-        # Create a clean architectural linen-grey base layout blueprint
+    with st.spinner("⚡ Running layout matrix computations..."):
+        # Create professional blueprints blueprint linen canvas
         blueprint = np.zeros((h, w, 3), dtype=np.uint8)
-        blueprint[:] = (235, 237, 240) 
+        blueprint[:] = (240, 242, 245) 
         
-        # Computer Vision Image Signal Decomposition Pipeline
-        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-        blurred = cv2.GaussianBlur(gray, (7, 7), 0)
+        # 1. Render Eco-Park Boundaries smoothly
+        smooth_green = cv2.GaussianBlur(green_mask, (25, 25), 0)
+        blueprint[smooth_green > 100] = (208, 240, 212) # Soft architectural sage green
         
-        # Dynamically extract high-contrast transportation highway skeletons
-        edges = cv2.Canny(blurred, road_sensitivity, road_sensitivity * 3)
-        edge_y, edge_x = np.where(edges == 255)
+        # 2. Generative Block Layout Iteration Loops
+        spacing = b_size + b_gap
+        res_count, comm_count = 0, 0
         
-        # LAYER 1: ECO-GREEN BUFFER ZONES (Extracts vegetation shapes natively)
-        _, green_mask = cv2.threshold(blurred, green_threshold, 255, cv2.THRESH_BINARY_INV)
-        green_mask = cv2.dilate(green_mask, np.ones((15, 15), np.uint8), iterations=1)
-        green_mask = cv2.GaussianBlur(green_mask, (15, 15), 0)
-        blueprint[green_mask > 127] = (200, 230, 201) # Soft eco-green fill
-        
-        # LAYERS 2 & 3: ADAPTIVE COMMERCIAL HUBS & RESIDENTIAL NEIGHBORHOODS
-        grid_size = sector_size
-        
-        for y in range(10, h - grid_size, grid_size):
-            for x in range(10, w - grid_size, grid_size):
+        for y in range(20, h - spacing, spacing):
+            for x in range(20, w - spacing, spacing):
                 
                 # Check proximity to actual infrastructure lines extracted from this image
                 if len(edge_x) > 0:
-                    distance_to_road = np.min(np.sqrt((edge_x - x)**2 + (edge_y - y)**2))
+                    dist_to_road = np.min(np.sqrt((edge_x - x)**2 + (edge_y - y)**2))
                 else:
-                    distance_to_road = 999.0 # Fallback if no lines are found
-
-                # DYNAMIC ZONING CONDITION CONTROLLERS
-                if distance_to_road < 45:
-                    # Allocate Commercial Core Centers (Blue) adjacent to transport pathways
-                    cv2.rectangle(blueprint, (x+4, y+4), (x+grid_size-4, y+grid_size-4), (254, 254, 254), -1) # Plot frame
-                    cv2.rectangle(blueprint, (x+6, y+6), (x+grid_size-6, y+grid_size-6), (207, 226, 243), -1) # Soft blue base
-                    cv2.rectangle(blueprint, (x+14, y+16), (x+grid_size-14, y+grid_size-16), (41, 128, 185), -1) # Commercial complex
+                    dist_to_road = 999.0
                     
-                elif green_mask[y + grid_size//2, x + grid_size//2] <= 127:
-                    # Allocate Grid Housing Communities (Orange) inside secure flat fields
-                    cv2.rectangle(blueprint, (x+4, y+4), (x+grid_size-4, y+grid_size-4), (254, 237, 222), -1)
+                # A. HIGHWAY ACCESS CORRIDORS: Plot high-density commercial complexes
+                if dist_to_road < 50:
+                    if x % 3 == 0 and y % 2 == 0:
+                        # Draw complex L-shaped commercial footprints instead of flat squares
+                        cv2.rectangle(blueprint, (x, y), (x + b_size + 4, y + b_size - 2), (41, 128, 185), -1)
+                        cv2.rectangle(blueprint, (x, y + b_size - 2), (x + b_size // 2, y + b_size + 4), (41, 128, 185), -1)
+                        comm_count += 1
+                        
+                # B. SETTLEMENT VALLEYS: Plot rows of residential houses with driveways
+                elif smooth_green[y + b_size // 2, x + b_size // 2] <= 100:
+                    # Draw a crisp residential land parcel plot border
+                    cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size), (243, 244, 246), -1)
+                    cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size), (209, 213, 219), 1)
                     
-                    # Draw sub-grid individual building footprints
-                    for sub_y in range(y + 8, y + grid_size - 12, 22):
-                        for sub_x in range(x + 8, x + grid_size - 12, 22):
-                            if sub_y < h and sub_x < w and green_mask[sub_y, sub_x] <= 127:
-                                cv2.rectangle(blueprint, (sub_x, sub_y), (sub_x + 12, sub_y + 12), (211, 84, 0), -1)
+                    # Draw individual house footprint structure inside the parcel boundary
+                    h_w, h_h = int(b_size * 0.6), int(b_size * 0.6)
+                    cv2.rectangle(blueprint, (x + 2, y + 2), (x + h_w, y + h_h), (211, 84, 0), -1) # Terracotta footprint
+                    
+                    # Add tiny detail: Private access driveway lines
+                    cv2.line(blueprint, (x + h_w, y + 4), (x + b_size, y + 4), (180, 180, 180), 1)
+                    res_count += 1
 
-        # LAYER 4: TRANSPORTATION OVERLAYS (Traces the unique geometry of the target file)
-        road_dilation = cv2.dilate(edges, np.ones((5, 5), np.uint8), iterations=1)
-        blueprint[road_dilation == 255] = (100, 110, 120) # Asphalt primary beds
-        blueprint[edges == 255] = (255, 255, 255)         # White center medians
-
-    with col2:
-        st.subheader("Output: AI Master Plan Render")
-        st.image(blueprint, use_container_width=True)
+        # 3. OVERLAY TRANSPORTATION NETWORKS
+        # Draw clean white local collector street lines separating structural zones
+        for y in range(0, h, spacing * 2):
+            cv2.line(blueprint, (0, y), (w, y), (255, 255, 255), 2)
+        for x in range(0, w, spacing * 2):
+            cv2.line(blueprint, (x, 0), (x, h), (255, 255, 255), 2)
+            
+        # Overlay the primary asphalt highway line extracted from the image
+        road_bed = cv2.dilate(edges, np.ones((7, 7), np.uint8), iterations=1)
+        blueprint[road_bed == 255] = (74, 85, 104)   # Slate-grey infrastructure layer
+        blueprint[edges == 255] = (255, 255, 255)     # Crispy white center road dividers
         
     # =========================================================================
-    # COMPILATION EXPORT UTILITY
+    # REAL-TIME LIVE STATISTICAL ANALYTICS METRICS DISPLAY
     # =========================================================================
+    col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+    
+    # Calculate green space coverage percentage
+    green_pct = int((np.sum(smooth_green > 100) / (h * w)) * 100)
+    # Calculate road length index approximation
+    road_idx = int(np.sum(edges == 255) / 100)
+    
+    with col_m1:
+        st.markdown(f"<div class='metric-box'><div class='metric-val'>{res_count:,}</div><div class='metric-lbl'>🏡 Residential Units</div></div>", unsafe_allow_html=True)
+    with col_m2:
+        st.markdown(f"<div class='metric-box'><div class='metric-val'>{comm_count}</div><div class='metric-lbl'>🏢 Commercial Blocks</div></div>", unsafe_allow_html=True)
+    with col_m3:
+        st.markdown(f"<div class='metric-box'><div class='metric-val'>{green_pct}%</div><div class='metric-lbl'>🌳 Eco-Preservation Ratio</div></div>", unsafe_allow_html=True)
+    with col_m4:
+        st.markdown(f"<div class='metric-box'><div class='metric-val'>{road_idx} km</div><div class='metric-lbl'>🛣️ Total Planned Roads</div></div>", unsafe_allow_html=True)
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # =========================================================================
+    # RENDER SIDE-BY-SIDE PLATFORM COLUMNS
+    # =========================================================================
+    layout_col1, layout_col2 = st.columns(2)
+    
+    with layout_col1:
+        st.subheader("🛰️ Input Terrain Capture")
+        st.image(img_np, use_container_width=True)
+        
+    with layout_col2:
+        st.subheader("🗺️ Synthesized Generative Blueprint Layout")
+        st.image(blueprint, use_container_width=True)
+        
+    # RENDER DATA EXPORT CONTROLLER
     result_img = Image.fromarray(blueprint)
     result_img.save("temp_blueprint.png")
     with open("temp_blueprint.png", "rb") as file:
         st.download_button(
-            label="📥 Download Master Plan Blueprint",
+            label="📥 Export High-Resolution Structural Layout Blueprint",
             data=file,
-            file_name="ai_urban_blueprint.png",
+            file_name="urban_nexus_masterplan.png",
             mime="image/png"
         )
 else:
-    st.info("ℹ️ Awaiting satellite land footprint upload. Drop your map image into the handler window above.")
+    st.info("ℹ️ System standing by. Upload high-resolution aerial terrain imagery to initiate the planning pipeline.")
