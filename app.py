@@ -80,39 +80,48 @@ class UrbanGenerator(nn.Module):
 # =========================================================================
 # ⚙️ SECURE HARDWARE CLOUD WEIGHTS INGESTION
 # =========================================================================
+# =========================================================================
+# ⚙️ SECURE HARDWARE CLOUD WEIGHTS INGESTION FROM HUGGING FACE
+# =========================================================================
 device = torch.device("cpu")
 
 @st.cache_resource
 def load_ai_model():
     model = UrbanGenerator()
     
-    # 1. Establish the internal cloud directories paths
+    # 1. Establish internal cloud directories paths
     os.makedirs("saved_models", exist_ok=True)
     checkpoint_path = "saved_models/generator_epoch_8.pth"
     
-    # 2. AUTOMATIC EXTERNAL CORE INGESTION UTILITY
+    # 2. AUTOMATIC EXTERNAL CORE INGESTION UTILITY (HUGGING FACE DIRECT STREAM)
     if not os.path.exists(checkpoint_path):
-        with st.spinner("📥 Downloading deep neural network weights (~40MB)... This happens only once."):
-            # REPLACE 'YOUR_FILE_ID' BELOW with your actual Google Drive long file ID string
-            FILE_ID = "YOUR_FILE_ID" 
-            download_url = f"https://google.com{FILE_ID}"
+        with st.spinner("📥 Downloading deep neural network weights from Hugging Face (~40MB)... This happens only once."):
+            # ⬇️ PASTE YOUR COPIED DIRECT HUGGING FACE DOWNLOAD LINK BETWEEN THE QUOTES BELOW ⬇️
+            download_url = "https://huggingface.co/rimurutempest56/ai-urban-planner-tumkur/resolve/main/generator_epoch_8.pth?download=true"
             
-            # Low-overhead request streaming buffer to bypass server RAM timeout limits
             import requests
-            response = requests.get(download_url, stream=True)
+            headers = {"User-Agent": "Mozilla/5.0"}
+            response = requests.get(download_url, headers=headers, stream=True)
+            
             if response.status_code == 200:
                 with open(checkpoint_path, 'wb') as f:
                     for chunk in response.iter_content(chunk_size=8192):
                         if chunk:
                             f.write(chunk)
+            else:
+                st.error(f"❌ Download failed. Server responded with status code: {response.status_code}")
                             
     # 3. Load the completed array back to memory
     if os.path.exists(checkpoint_path):
-        model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+        try:
+            model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+        except Exception as e:
+            st.error(f"❌ Error loading model weights: {e}")
     model.eval()
     return model
 
 net_G = load_ai_model()
+
 
 
 # =========================================================================
