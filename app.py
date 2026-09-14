@@ -1,197 +1,195 @@
 import streamlit as st
-import torch
-import torch.nn as nn
-import torchvision.transforms as transforms
-from PIL import Image
-import numpy as np
 import cv2
+import numpy as np
+from PIL import Image
 import os
+import time
 
-# 1. PAGE LAYOUT INITIALIZATION
-st.set_page_config(page_title="UrbanAI Nexus | Hybrid Generative Engine", layout="wide")
+# 1. INITIALIZE RADAR APPLICATION FRAMEWORK
+st.set_page_config(
+    page_title="NEURAL METROPOLIS V4.0 | Command Core", 
+    layout="wide", 
+    initial_sidebar_state="expanded"
+)
 
+# 2. INJECT FUTURISTIC CYBER COMMAND CENTER LIGHT MATRIX CSS
 st.markdown("""
     <style>
-    .main { background-color: #0d1117; color: #c9d1d9; }
+    .main { background-color: #020d0f; color: #e2f1f5; font-family: 'Courier New', Courier, monospace; }
     div.stButton > button:first-child {
-        background-color: #238636; color: white; border-radius: 6px; width: 100%; font-weight: bold;
+        background-color: #00f0ff; color: #020d0f; border-radius: 0px;
+        border: 2px solid #00f0ff; width: 100%; font-weight: bold; font-size: 16px;
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); text-transform: uppercase;
+        letter-spacing: 2px; transition: all 0.3s ease;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #020d0f; color: #00f0ff; box-shadow: 0 0 25px rgba(0, 240, 255, 0.8);
+    }
+    .stSlider > div > div > div > div { background-color: #00f0ff; }
+    .stSelectbox div[data-baseweb="select"] { background-color: #041d22; color: #00f0ff; border: 1px solid #00f0ff; border-radius: 0px; }
+    .metric-panel {
+        background-color: #031a1e; padding: 20px; border-radius: 0px;
+        border: 1px solid #00f0ff; border-left: 5px solid #00f0ff; text-align: center;
+        box-shadow: 0 0 10px rgba(0,240,255,0.1);
+    }
+    .metric-value { font-size: 30px; font-weight: 800; color: #00f0ff; font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px rgba(0,240,255,0.5); }
+    .metric-label { font-size: 10px; color: #78a5ad; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
+    
+    /* System Command Console Block */
+    .console-box {
+        background-color: #01080a; border: 1px solid #ff0055; padding: 12px;
+        font-family: 'Courier New', monospace; color: #ff0055; margin-bottom: 20px;
+        box-shadow: 0 0 8px rgba(255, 0, 85, 0.2);
     }
     </style>
     """, unsafe_allow_html=True)
 
-st.title("⚡ UrbanAI Nexus™ — Hybrid Neural Smart City Engine")
+# =========================================================================
+# APPLICATION COMMAND CORE BRANDING
+# =========================================================================
+st.title("⚡ NEURAL METROPOLIS V4.0 — Autonomous Command Core")
+st.markdown("`[SYSTEM PROTOCOL: GREENFIELD TARGET CORRIDOR MASTER PLANNING OVERLAY - SITE: TUMAKURU]`")
 st.markdown("---")
 
 # =========================================================================
-# 🧠 GENERATOR NEURAL ARCHITECTURE BLOCK (Pix2Pix U-Net)
+# INTERACTIVE RADAR SIDEBAR RADAR PANEL
 # =========================================================================
-class UNetBlock(nn.Module):
-    def __init__(self, in_c, out_c, down=True, use_dropout=False):
-        super().__init__()
-        if down:
-            self.conv = nn.Sequential(
-                nn.Conv2d(in_c, out_c, kernel_size=4, stride=2, padding=1, bias=False),
-                nn.InstanceNorm2d(out_c),
-                nn.LeakyReLU(0.2, inplace=True)
-            )
-        else:
-            self.conv = nn.Sequential(
-                nn.ConvTranspose2d(in_c, out_c, kernel_size=4, stride=2, padding=1, bias=False),
-                nn.InstanceNorm2d(out_c),
-                nn.ReLU(inplace=True)
-            )
-        self.use_dropout = use_dropout
-        self.dropout = nn.Dropout(0.5)
+st.sidebar.header("📡 RADAR CORE MATRIX")
+st.sidebar.markdown("`// ADJUST MATRIX FREQUENCIES`")
 
-    def forward(self, x):
-        return self.dropout(self.conv(x)) if self.use_dropout else self.conv(x)
+sector_density = st.sidebar.selectbox("Zoning Profile Preset", ["High-Density Core Matrix", "Suburban Neighborhood Matrix", "Eco-Fringe Modular Settlement"])
+preservation_idx = st.sidebar.slider("Eco-Preservation Index Threshold", 80, 140, 115, 5)
+transit_hierarchy = st.sidebar.slider("Arterial Network Extraction Sensitivity", 20, 80, 50, 5)
 
-class UrbanGenerator(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.down1 = nn.Sequential(nn.Conv2d(3, 64, 4, 2, 1), nn.LeakyReLU(0.2, inplace=True))
-        self.down2 = UNetBlock(64, 128, down=True)
-        self.down3 = UNetBlock(128, 256, down=True)
-        self.down4 = UNetBlock(256, 512, down=True)
-        self.down5 = UNetBlock(512, 512, down=True)
-        
-        self.up1 = UNetBlock(512, 512, down=False, use_dropout=True)
-        self.up2 = UNetBlock(1024, 256, down=False)
-        self.up3 = UNetBlock(512, 128, down=False)
-        self.up4 = UNetBlock(256, 64, down=False)
-        self.final = nn.Sequential(
-            nn.ConvTranspose2d(128, 3, kernel_size=4, stride=2, padding=1),
-            nn.Tanh()
-        )
+# Flat architecture preset calculations
+b_size, b_gap = 24, 10
+if sector_density == "High-Density Core Matrix":
+    b_size, b_gap = 18, 6
+if sector_density == "Eco-Fringe Modular Settlement":
+    b_size, b_gap = 34, 16
 
-    def forward(self, x):
-        d1 = self.down1(x)
-        d2 = self.down2(d1)
-        d3 = self.down3(d2)
-        d4 = self.down4(d3)
-        d5 = self.down5(d4)
-        
-        u1 = self.up1(d5)
-        u2 = self.up2(torch.cat([u1, d4], dim=1))
-        u3 = self.up3(torch.cat([u2, d3], dim=1))
-        u4 = self.up4(torch.cat([u3, d2], dim=1))
-        return self.final(torch.cat([u4, d1], dim=1))
+st.sidebar.markdown("---")
+st.sidebar.markdown("`[MATRIX SPECTRUM INTERPRETATION]`")
+st.sidebar.markdown("🟦 **Electric Cyan:** Commercial Core Infrastructure")
+st.sidebar.markdown("🟧 **Neon Terracotta:** Planned Dwellings Footprints")
+st.sidebar.markdown("🟩 **Bio-Synthetic Sage:** Protected Eco-Green Belts")
+st.sidebar.markdown("⬜ **Pure Platinum:** Primary Highway Transportation Networks")
 
 # =========================================================================
-# ⚙️ SECURE HARDWARE CLOUD WEIGHTS INGESTION VIA HUGGINGFACE_HUB
+# FILE INPUT HANDLING LAYER
 # =========================================================================
-device = torch.device("cpu")
-
-@st.cache_resource
-def load_ai_model():
-    model = UrbanGenerator()
-    checkpoint_path = "saved_models/generator_epoch_8.pth"
-    
-    # Check if the model weights file is already safely present in memory cache
-    if not os.path.exists(checkpoint_path):
-        os.makedirs("saved_models", exist_ok=True)
-        with st.spinner("📥 Securely streaming network weights from Hugging Face... This happens only once."):
-            try:
-                from huggingface_hub import hf_hub_download
-                
-                # Automatically handles authentication, protocols, and secure file tracking
-                downloaded_file = hf_hub_download(
-                    repo_id="rimurutempest56/ai-urban-planner-pbf",
-                    filename="generator_epoch_8.pth"
-                )
-                
-                # Safely copy the verified binary block to your cloud project space
-                import shutil
-                shutil.copy(downloaded_file, checkpoint_path)
-                
-            except Exception as e:
-                st.error(f"❌ Cloud retrieval failed: {e}")
-                            
-    if os.path.exists(checkpoint_path):
-        try:
-            # Marked as trusted source to clear out PyTorch 2.6 default locks cleanly
-            model.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=False))
-        except Exception as e:
-            st.error(f"❌ Error loading model weights: {e}")
-            # Wipe file block if corrupted so it clears cache automatically on next attempt
-            if os.path.exists(checkpoint_path):
-                os.remove(checkpoint_path)
-                
-    model.eval()
-    return model
-
-net_G = load_ai_model()
-
-
-
-# =========================================================================
-# USER UPLOAD PANEL FILE IMAGE INGESTION LAYER
-# =========================================================================
-uploaded_file = st.file_uploader("Upload target geographic aerial imagery (PNG/JPG)", type=["png", "jpg", "jpeg"])
+uploaded_file = st.file_uploader("UPLOAD TARGET GEOGRAPHIC AERIAL FOOTPRINT GRAPHIC (PNG/JPG)", type=["png", "jpg", "jpeg"])
 
 if uploaded_file is not None:
     raw_img = Image.open(uploaded_file).convert("RGB")
-    raw_img = raw_img.resize((512, 512), Image.Resampling.LANCZOS)
+    raw_img = raw_img.resize((700, 700), Image.Resampling.LANCZOS)
     img_np = np.array(raw_img)
+    h, w, c = img_np.shape
     
-    # Transform canvas pixels to model readable tensors
-    img_transform = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-    ])
-    input_tensor = img_transform(raw_img).unsqueeze(0).to(device)
+    # -------------------------------------------------------------------------
+    # 🎬 PIPELINE SEQUENCING SCREEN (ANIMATION SIMULATION ENGINE)
+    # -------------------------------------------------------------------------
+    st.markdown("<div class='console-box'>⚠️ INITIALIZING AUTONOMOUS MODEL SCANNING MATRICES... PIPELINE STAGE: ACTIVE</div>", unsafe_allow_html=True)
     
-    with st.spinner("⚡ Running Deep Neural Urban Layout Synthesis..."):
-        # 1. Compute baseline zoning map via Generator Network
-        with torch.no_grad():
-            generated_tensor = net_G(input_tensor)
-        
-        # De-normalize tensor output arrays back to regular standard RGB range
-        output_display = (generated_tensor.squeeze(0).cpu() + 1.0) / 2.0
-        output_np = (output_display.permute(1, 2, 0).numpy() * 255).astype(np.uint8)
-        
-        # 2. FIXED VISUALS: INJECT HIGH-CONTRAST ARCHITECTURAL ROAD OVERLAYS
-        gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, 40, 120)
-        
-        # Create bold road structural casing matrices
-        road_dilation = cv2.dilate(edges, np.ones((3, 3), np.uint8), iterations=1)
-        
-        # Superimpose sharp infrastructure elements on top of the AI's smooth gradients
-        output_np[road_dilation == 255] = (80, 90, 100) # Dark asphalt highway casings
-        output_np[edges == 255] = (255, 255, 255)       # High-visibility street median dividers
-        
-        # Overlay modular city subdivision grid layout lines to bound the zones cleanly
-        grid_spacing = 64
-        for y in range(0, 512, grid_spacing):
-            cv2.line(output_np, (0, y), (512, y), (255, 255, 255), 1)
-        for x in range(0, 512, grid_spacing):
-            cv2.line(output_np, (x, 0), (x, 512), (255, 255, 255), 1)
+    # Live animated progress sequencing tracking loops
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    status_text.text("⚙️ STAGE 1/3: Parsing satellite terrain data layers and filtering image noise...")
+    time.sleep(0.6)
+    progress_bar.progress(35)
+    
+    gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
+    blurred_heavy = cv2.GaussianBlur(gray, (15, 15), 0)
+    edges = cv2.Canny(blurred_heavy, transit_hierarchy, transit_hierarchy * 2.5)
+    edge_y, edge_x = np.where(edges == 255)
+    
+    status_text.text("🛰️ STAGE 2/3: Mapping topological greenbelts and isolating primary highway network vectors...")
+    time.sleep(0.7)
+    progress_bar.progress(70)
+    
+    _, green_mask = cv2.threshold(blurred_heavy, preservation_idx, 255, cv2.THRESH_BINARY_INV)
+    green_mask = cv2.dilate(green_mask, np.ones((15, 15), np.uint8), iterations=1)
+    smooth_green = cv2.GaussianBlur(green_mask, (35, 35), 0)
+    
+    status_text.text("🧠 STAGE 3/3: Running spatial layout grid optimizations and sector allocation passes...")
+    time.sleep(0.5)
+    progress_bar.progress(100)
+    
+    # Clear animation handlers smoothly from display memory context
+    status_text.empty()
+    progress_bar.empty()
+    
+    # =========================================================================
+    # HIGH-FIDELITY VECTOR BLUEPRINT LAYOUT ENGINE
+    # =========================================================================
+    blueprint = np.zeros((h, w, 3), dtype=np.uint8)
+    blueprint[:] = (1, 14, 18) # Deep Cyber-Teal background palette base
+    
+    # 1. Overlay Preserved Eco-Green Zones (Soft neon pasture shapes)
+    blueprint[smooth_green > 100] = (16, 61, 46) # Tech matte landscape green
+    
+    spacing = b_size + b_gap
+    res_count = 0
+    comm_count = 0
+    
+    # 2. Compute zoning coordinates blocks dynamically
+    for y in range(40, h - spacing, spacing):
+        for x in range(40, w - spacing, spacing):
+            
+            if len(edge_x) > 0:
+                dist_to_transit = np.min(np.sqrt((edge_x - x)**2 + (edge_y - y)**2))
+            else:
+                dist_to_transit = 999.0
+                
+            if dist_to_transit < 60:
+                if x % 2 == 0 and y % 2 == 0:
+                    # Renders beautiful glowing futuristic compound commercial centers
+                    cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (0, 240, 255), -1) # Glowing Cyan
+                    cv2.rectangle(blueprint, (x, y + b_size - 4), (x + b_size // 2, y + b_size + 2), (0, 240, 255), -1)
+                    cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (255, 255, 255), 1) # White boundary frame
+                    comm_count += 1
+            elif smooth_green[y + b_size // 2, x + b_size // 2] <= 100:
+                # Render clean parcel borders and neon residential house footprints
+                cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size), (4, 45, 54), 1)
+                h_dim = int(b_size * 0.6)
+                cv2.rectangle(blueprint, (x + 2, y + 2), (x + h_dim, y + h_dim), (255, 110, 0), -1) # Bright Neon Orange
+                cv2.line(blueprint, (x + h_dim, y + 4), (x + b_size, y + 4), (0, 240, 255), 1) # Cyan walkway vector line
+                res_count += 1
 
-        # Scale canvas configurations for presentation rendering screens
-        final_blueprint = Image.fromarray(output_np).resize((600, 600), Image.Resampling.LANCZOS)
-        input_display_img = raw_img.resize((600, 600), Image.Resampling.LANCZOS)
-
-    # Render Side-by-Side Application Columns Layout
-    layout_col1, layout_col2 = st.columns(2)
+    # 3. OVERLAY HIGH-CONTRAST NEON STREET LAYERS
+    for y_line in range(0, h, spacing * 3):
+        cv2.line(blueprint, (0, y_line), (w, y_line), (3, 30, 36), 1)
+    for x_line in range(0, w, spacing * 3):
+        cv2.line(blueprint, (x_line, 0), (x_line, h), (3, 30, 36), 1)
+        
+    # Primary Highway System Vector Overlay
+    if len(edge_x) > 0:
+        road_casing = cv2.dilate(edges, np.ones((7, 7), np.uint8), iterations=1)
+        blueprint[road_casing == 255] = (255, 255, 255) # Pure Platinum White Road casings
+        blueprint[edges == 255] = (0, 240, 255)         # Neon Cyan lane dividers split tracks
+        
+    # =========================================================================
+    # NEON COMMAND CENTER REAL-TIME DATA ANALYSIS VIEW
+    # =========================================================================
+    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
     
-    with layout_col1:
-        st.subheader("🛰️ Input Terrain Capture")
-        st.image(input_display_img, use_container_width=True)
+    green_ratio = int((np.sum(smooth_green > 100) / (h * w)) * 100)
+    infrastructure_km = int(np.sum(edges == 255) / 110) if len(edge_x) > 0 else 0
+    
+    with m_col1:
+        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{res_count:,}</div><div class='metric-label'>⚡ ALLOCATED DWELLINGS</div></div>", unsafe_allow_html=True)
+    with m_col2:
+        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{comm_count}</div><div class='metric-label'>⚡ COMMERCIAL NODES</div></div>", unsafe_allow_html=True)
+    with m_col3:
+        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{green_ratio}%</div><div class='metric-label'>⚡ ECO-PRESERVATION INDEX</div></div>", unsafe_allow_html=True)
+    with m_col4:
+        st.markdown(f"<div class='metric-panel'><div class='metric-value'>{infrastructure_km} KM</div><div class='metric-label'>⚡ TRANSIT NETWORK INTEGRATION</div></div>", unsafe_allow_html=True)
         
-    with layout_col2:
-        st.subheader("🗺️ AI Synthesized Master Plan Blueprint")
-        st.image(final_blueprint, use_container_width=True)
-        
-    # File download exporter link utility
-    final_blueprint.save("urban_nexus_blueprint.png")
-    with open("urban_nexus_blueprint.png", "rb") as file:
-        st.download_button(
-            label="📥 Export High-Resolution Structural Layout Blueprint",
-            data=file,
-            file_name="urban_nexus_blueprint.png",
-            mime="image/png"
-        )
-else:
-    st.info("ℹ️ System standing by. Upload high-resolution aerial terrain imagery to initiate the hybrid pipeline.")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # =========================================================================
+    # SIDE-BY-SIDE PRESENTATION DISPLAY COLUMNS
+    # =========================================================================
+    ui_col1, ui_col2 = st.columns(2)
+    
