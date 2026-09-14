@@ -3,7 +3,6 @@ import cv2
 import numpy as np
 from PIL import Image
 import os
-import time
 
 # 1. INITIALIZE MASTER COMMAND PORTAL CORE
 st.set_page_config(
@@ -32,8 +31,8 @@ st.markdown("""
     .metric-value { font-size: 30px; font-weight: 800; color: #00f0ff; text-shadow: 0 0 5px rgba(0,240,255,0.5); }
     .metric-label { font-size: 10px; color: #78a5ad; text-transform: uppercase; letter-spacing: 1px; margin-top: 6px; }
     .console-box {
-        background-color: #01080a; border: 1px solid #ff0055; padding: 12px;
-        font-family: 'Courier New', monospace; color: #ff0055; margin-bottom: 20px;
+        background-color: #01080a; border: 1px solid #00f0ff; padding: 12px;
+        font-family: 'Courier New', monospace; color: #00f0ff; margin-bottom: 20px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -83,37 +82,18 @@ if uploaded_file is not None:
     img_resized = cv2.resize(img_np, (new_w, new_h), interpolation=cv2.INTER_LANCZOS4)
     h, w, c = img_resized.shape
     
-    # -------------------------------------------------------------------------
-    # 🎬 AUTOMATED LAYOUT SEQUENCING STATUS ANIMATION BLOCK
-    # -------------------------------------------------------------------------
-    st.markdown("<div class='console-box'>⚠️ INITIALIZING AUTONOMOUS MODEL SCANNING MATRICES... PIPELINE STAGE: ACTIVE</div>", unsafe_allow_html=True)
+    # Direct high-speed processing display box
+    st.markdown("<div class='console-box'>⚡ PIPELINE RUNNING: GENERATING MASTER PLAN藍圖 CORRIDORS IMMEDIATELY...</div>", unsafe_allow_html=True)
     
-    progress_bar = st.progress(0)
-    status_text = st.empty()
-    
-    status_text.text("⚙️ STAGE 1/3: Analyzing terrain pixel profiles and computing spatial cost metrics...")
-    time.sleep(0.4)
-    progress_bar.progress(35)
-    
+    # Core Vision Pipelines (No delays, runs instantly)
     gray = cv2.cvtColor(img_resized, cv2.COLOR_RGB2GRAY)
     blurred_heavy = cv2.GaussianBlur(gray, (11, 11), 0)
     edges = cv2.Canny(blurred_heavy, transit_hierarchy, transit_hierarchy * 2.5)
     edge_y, edge_x = np.where(edges == 255)
     
-    status_text.text("🛰️ STAGE 2/3: Segmenting high-contrast transit corridors and mapping natural greenbelts...")
-    time.sleep(0.4)
-    progress_bar.progress(70)
-    
     _, green_mask = cv2.threshold(blurred_heavy, preservation_idx, 255, cv2.THRESH_BINARY_INV)
     green_mask = cv2.dilate(green_mask, np.ones((11, 11), np.uint8), iterations=1)
     smooth_green = cv2.GaussianBlur(green_mask, (25, 25), 0)
-    
-    status_text.text("🧠 STAGE 3/3: Running sector grid generation and compiling vector blueprint layouts...")
-    time.sleep(0.3)
-    progress_bar.progress(100)
-    
-    status_text.empty()
-    progress_bar.empty()
     
     # =========================================================================
     # RESPONSIVE HIGH-REALISM BLUEPRINT SYNTHESIS ENGINE
@@ -137,15 +117,15 @@ if uploaded_file is not None:
             else:
                 dist_to_transit = 999.0
                 
-            # FIXED LOGIC HIERARCHY: Restrict Commercial nodes to the immediate narrow highway path (distance < 20)
-            if dist_to_transit < 20:
+            # MULTI-TIER PROXIMITY LOGIC: Restrict Commercial to the immediate narrow highway strip (distance < 25)
+            if dist_to_transit < 25:
                 if x % 2 == 0 and y % 2 == 0:
                     # Draw futuristic neon high-density commercial centers (Electric Cyan)
                     cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (0, 240, 255), -1) 
                     cv2.rectangle(blueprint, (x, y + b_size - 4), (x + b_size // 2, y + b_size + 2), (0, 240, 255), -1)
                     cv2.rectangle(blueprint, (x, y), (x + b_size + 2, y + b_size - 4), (255, 255, 255), 1)
                     comm_count += 1
-            # Allocate Residential Dwellings in flat buildable plots away from heavy transit lines
+            # Allocate Residential Neighborhood Dwellings cleanly in open flat sections
             elif smooth_green[y + b_size // 2, x + b_size // 2] <= 100:
                 # Draw property boundaries and individual terracotta dwellings (Neon Terracotta/Orange)
                 cv2.rectangle(blueprint, (x, y), (x + b_size, y + b_size), (4, 45, 54), 1)
@@ -186,7 +166,7 @@ if uploaded_file is not None:
     st.markdown("<br>", unsafe_allow_html=True)
     
     # =========================================================================
-    # SIDE-BY-SIDE PRESENTATION COLUMNS (RESPONSIVE VIEW ENABLED)
+    # SIDE-BY-SIDE PRESENTATION COLUMNS (RESPONSIVE VIEW)
     # =========================================================================
     ui_col1, ui_col2 = st.columns(2)
     
@@ -196,3 +176,17 @@ if uploaded_file is not None:
         
     with ui_col2:
         st.subheader("⚡ GENERATIVE METROPOLIS MATRIX BLUEPRINT")
+        st.image(blueprint, use_container_width=True)
+        
+    # DATA LAYER EXPORTER UTILITY LINK
+    final_output_image = Image.fromarray(blueprint)
+    final_output_image.save("cyber_metropolis_masterplan.png")
+    with open("cyber_metropolis_masterplan.png", "rb") as file:
+        st.download_button(
+            label="📥 DOWNLOAD CYBER BLUEPRINT CONFIGURATION LOG",
+            data=file,
+            file_name="cyber_metropolis_masterplan.png",
+            mime="image/png"
+        )
+else:
+    st.info("📡 SYSTEM STANDBY // AWAITING SATELLITE TERRAIN INPUT LAYER TO INITIALIZE RADAR PROTOCOLS.")
