@@ -3,5 +3,5 @@ torch
 torchvision
 Pillow
 numpy
-requests
+huggingface_hub
 opencv-python-headless
