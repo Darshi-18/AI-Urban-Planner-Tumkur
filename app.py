@@ -78,46 +78,50 @@ class UrbanGenerator(nn.Module):
         return self.final(torch.cat([u4, d1], dim=1))
 
 # =========================================================================
-# ⚙️ FIXED: AUTOMATED MODEL WEIGHTS DOWNLOAD UTILITY (RAW BINARY)
-# =========================================================================
-# =========================================================================
-# ⚙️ SECURE HARDWARE CLOUD WEIGHTS INGESTION FROM HUGGING FACE
+# ⚙️ SECURE HARDWARE CLOUD WEIGHTS INGESTION VIA HUGGINGFACE_HUB
 # =========================================================================
 device = torch.device("cpu")
 
 @st.cache_resource
 def load_ai_model():
     model = UrbanGenerator()
-    os.makedirs("saved_models", exist_ok=True)
     checkpoint_path = "saved_models/generator_epoch_8.pth"
     
+    # Check if the model weights file is already safely present in memory cache
     if not os.path.exists(checkpoint_path):
-        with st.spinner("📥 Downloading deep neural network weights from Hugging Face (~40MB)..."):
-            download_url = "https://huggingface.co"
-            
-            import requests
-            headers = {"User-Agent": "Mozilla/5.0"}
-            response = requests.get(download_url, headers=headers, stream=True)
-            if response.status_code == 200:
-                with open(checkpoint_path, 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=8192):
-                        if chunk:
-                            f.write(chunk)
-            else:
-                st.error(f"❌ Download failed. Status Code: {response.status_code}")
+        os.makedirs("saved_models", exist_ok=True)
+        with st.spinner("📥 Securely streaming network weights from Hugging Face... This happens only once."):
+            try:
+                from huggingface_hub import hf_hub_download
+                
+                # Automatically handles authentication, protocols, and secure file tracking
+                downloaded_file = hf_hub_download(
+                    repo_id="rimurutempest56/ai-urban-planner-pbf",
+                    filename="generator_epoch_8.pth"
+                )
+                
+                # Safely copy the verified binary block to your cloud project space
+                import shutil
+                shutil.copy(downloaded_file, checkpoint_path)
+                
+            except Exception as e:
+                st.error(f"❌ Cloud retrieval failed: {e}")
                             
     if os.path.exists(checkpoint_path):
         try:
-            # FIXED: Bypasses the strict PyTorch 2.6 security lock by marking the model as a trusted source
+            # Marked as trusted source to clear out PyTorch 2.6 default locks cleanly
             model.load_state_dict(torch.load(checkpoint_path, map_location=device, weights_only=False))
         except Exception as e:
             st.error(f"❌ Error loading model weights: {e}")
+            # Wipe file block if corrupted so it clears cache automatically on next attempt
             if os.path.exists(checkpoint_path):
                 os.remove(checkpoint_path)
+                
     model.eval()
     return model
 
 net_G = load_ai_model()
+
 
 
 # =========================================================================
